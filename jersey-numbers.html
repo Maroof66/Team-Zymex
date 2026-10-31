@@ -51,7 +51,7 @@ a, button {
   padding: 20px;
   border: 1px solid #303a32;
   border-radius: 18px;
-  background: #191f1b;
+  background: 191f1b;
 }
 
 .players {
@@ -65,7 +65,7 @@ a, button {
   min-width: 0;
   padding: 20px 12px;
   text-align: center;
-  border: 1px solid #43503e;
+  border: 1px solid 43503e;
   border-radius: 16px;
   background: #101512;
   overflow-wrap: anywhere;
@@ -154,7 +154,7 @@ async function loadPlayers() {
 
     const number = document.createElement('div');
     number.className = 'number';
-    number.textContent = '#' + Number(player.jersey_number);
+    number.textContent = Number(player.jersey_number);
 
     const name = document.createElement('div');
     name.className = 'name';
