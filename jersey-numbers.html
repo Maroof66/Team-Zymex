@@ -1,1 +1,175 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Team Zymex — Taken Jersey Numbers</title><style>:root{color-scheme:dark}body{margin:0;background:#101412;color:#f3f5ee;font:16px system-ui;padding:24px;max-width:760px;margin:auto}h1{font-size:clamp(30px,7vw,46px)}p{color:#aab4aa}a,button{background:#c7f36b;color:#111;border:0;border-radius:10px;padding:12px 16px;font-weight:800;text-decoration:none;cursor:pointer}.panel{margin-top:24px;padding:20px;border:1px solid #303a32;border-radius:18px;background:#191f1b}.numbers{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:10px;margin-top:20px}.num{padding:18px 8px;text-align:center;border:1px solid #43503e;border-radius:12px;font-size:25px;font-weight:900;background:#101512}.muted{color:#aab4aa;font-size:13px}</style></head><body><a href="./">← Back to registration</a><h1>Taken jersey numbers</h1><p>Numbers only are shown here to protect other players’ details.</p><section class="panel"><button id="refresh">↻ Refresh</button><p id="count">Loading…</p><div id="numbers" class="numbers"></div><p id="status" class="muted"></p></section><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>const sb=window.supabase.createClient('https://vyszgythhhbxszucwvyi.supabase.co','sb_publishable_YDKXRUzP6dP-6f2WnvXR-Q_zwsBoYCp');async function load(){document.getElementById('status').textContent='Checking…';const {data,error}=await sb.rpc('get_taken_jersey_numbers');if(error){document.getElementById('status').textContent='Could not load numbers. Refresh and try again.';return}const nums=(data||[]).map(x=>Number(x.jersey_number)).filter(Number.isFinite).sort((a,b)=>a-b);document.getElementById('count').textContent=nums.length+' jersey numbers currently taken';document.getElementById('numbers').innerHTML=nums.map(n=>'<div class="num">'+n+'</div>').join('')||'<p>No numbers taken yet.</p>';document.getElementById('status').textContent='Updated '+new Date().toLocaleTimeString()}document.getElementById('refresh').onclick=load;load();</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Team Zymex — Jersey Board</title>
+
+<style>
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+  max-width: 900px;
+  margin-inline: auto;
+  background: #101412;
+  color: #f3f5ee;
+  font: 16px system-ui, sans-serif;
+}
+
+h1 {
+  font-size: clamp(30px, 7vw, 46px);
+  margin-bottom: 8px;
+}
+
+p {
+  color: #aab4aa;
+  line-height: 1.6;
+}
+
+a, button {
+  display: inline-block;
+  background: #c7f36b;
+  color: #111;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.panel {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid #303a32;
+  border-radius: 18px;
+  background: #191f1b;
+}
+
+.players {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.player {
+  min-width: 0;
+  padding: 20px 12px;
+  text-align: center;
+  border: 1px solid #43503e;
+  border-radius: 16px;
+  background: #101512;
+  overflow-wrap: anywhere;
+}
+
+.number {
+  font-size: 34px;
+  line-height: 1.2;
+  font-weight: 950;
+  color: #c7f36b;
+}
+
+.name {
+  margin-top: 10px;
+  font-size: 15px;
+  font-weight: 850;
+  letter-spacing: 0.5px;
+}
+
+.muted {
+  color: #aab4aa;
+  font-size: 13px;
+}
+</style>
+</head>
+
+<body>
+<a href="./">← Back to registration</a>
+
+<h1>Jersey Board</h1>
+<p>See the jersey numbers and names selected by registered players.</p>
+
+<section class="panel">
+  <button id="refresh">↻ Refresh</button>
+  <p id="count">Loading players…</p>
+  <div id="players" class="players"></div>
+  <p id="status" class="muted"></p>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const sb = window.supabase.createClient(
+  'https://vyszgythhhbxszucwvyi.supabase.co',
+  'sb_publishable_YDKXRUzP6dP-6f2WnvXR-Q_zwsBoYCp'
+);
+
+async function loadPlayers() {
+  const status = document.getElementById('status');
+  const count = document.getElementById('count');
+  const container = document.getElementById('players');
+
+  status.textContent = 'Loading registrations…';
+  count.textContent = 'Loading…';
+  container.replaceChildren();
+
+  const { data, error } = await sb.rpc('get_taken_jersey_numbers');
+
+  if (error) {
+    count.textContent = 'Unable to load players.';
+    status.textContent = 'Please refresh and try again.';
+    return;
+  }
+
+  const players = (data || [])
+    .filter(player => Number.isFinite(Number(player.jersey_number)))
+    .sort((a, b) =>
+      Number(a.jersey_number) - Number(b.jersey_number) ||
+      String(a.jersey_name || '').localeCompare(
+        String(b.jersey_name || '')
+      )
+    );
+
+  count.textContent = players.length +
+    (players.length === 1 ? ' player registered' : ' players registered');
+
+  if (players.length === 0) {
+    const empty = document.createElement('p');
+    empty.textContent = 'No jersey registrations yet.';
+    container.appendChild(empty);
+  }
+
+  players.forEach(player => {
+    const card = document.createElement('div');
+    card.className = 'player';
+
+    const number = document.createElement('div');
+    number.className = 'number';
+    number.textContent = '#' + Number(player.jersey_number);
+
+    const name = document.createElement('div');
+    name.className = 'name';
+    name.textContent = player.jersey_name || 'NAME NOT SET';
+
+    card.append(number, name);
+    container.appendChild(card);
+  });
+
+  status.textContent = 'Updated ' + new Date().toLocaleTimeString();
+}
+
+document.getElementById('refresh').addEventListener('click', loadPlayers);
+
+loadPlayers();
+</script>
+</body>
+</html>
